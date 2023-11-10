@@ -5,52 +5,65 @@ const textLoader = document.querySelector('.loader');
 const textError = document.querySelector('.error');
 const containerInfo = document.querySelector('.cat-info');
 
+const hiddenStyle = 'display: none;';
+const visibleStyle = 'display: block;';
+
 selectEl.addEventListener('click', handleOption);
+
+textLoader.style.cssText = hiddenStyle;
+textError.style.cssText = hiddenStyle;
 
 async function getBreeds() {
   try {
-    // setIsLoading(true);
+    textLoader.style.cssText = visibleStyle;
     const result = await fetchBreeds();
     console.log('getBreeds: ', result);
     return result;
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
+    textError.style.cssText = visibleStyle;
   } finally {
-    // setIsLoading(false);
+    textLoader.style.cssText = hiddenStyle;
   }
 }
+
 getBreeds()
-  .then(data =>
-    data
+  .then(data => {
+    return data
       .map(cat => {
         const markup = `<option value=${cat.id} key=${cat.id}>${cat.name}</option>`;
         selectEl.insertAdjacentHTML('beforeend', markup);
       })
-      .join('')
-  )
-  .catch(error => console.log(error));
+      .join('');
+  })
+  .catch(error => {
+    console.log(error);
+    textError.style.cssText = visibleStyle;
+  });
 
 async function getCatByBreed(breedId) {
   try {
-    // setIsLoading(true);
+    textLoader.style.cssText = visibleStyle;
     const result = await fetchCatByBreed(breedId);
-    // console.log('getCatByBreed: ', result);
     return result;
   } catch (error) {
-    throw new Error(error);
+    console.log(error);
+    textError.style.cssText = visibleStyle;
   } finally {
-    // setIsLoading(false);
+    textLoader.style.cssText = hiddenStyle;
   }
 }
 
 function handleOption(evt) {
   evt.preventDefault();
   const breedId = evt.target.value;
-  getCatByBreed(breedId).then(cat => {
-    console.log('Cat by breed: ', cat[0]);
-    const markup = `<div style="display: flex; flex-direction: row">
+  getCatByBreed(breedId)
+    .then(cat => {
+      console.log('Cat by breed: ', cat[0]);
+      const markup = `<div style="display: flex; flex-direction: row">
         <div
           style="
+            margin-top: 30px;
             margin-right: 30px;
             width: 350px;
             background-color: grey;
@@ -70,7 +83,7 @@ function handleOption(evt) {
             "
           />
         </div>
-        <div style="display: block">
+        <div style="display: block; margin-top: 30px">
           <h1 style="font-size: x-large; font-weight: 700; margin-bottom: 16px">
             ${cat[0]?.breeds[0]?.name}
           </h1>
@@ -80,6 +93,10 @@ function handleOption(evt) {
           </p>
         </div>
       </div>`;
-    containerInfo.innerHTML = markup;
-  });
+      containerInfo.innerHTML = markup;
+    })
+    .catch(error => {
+      console.log(error);
+      textError.style.cssText = visibleStyle;
+    });
 }
