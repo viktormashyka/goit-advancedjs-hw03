@@ -5,25 +5,23 @@ const textLoader = document.querySelector('.loader');
 const textError = document.querySelector('.error');
 const containerInfo = document.querySelector('.cat-info');
 
-const hiddenStyle = 'display: none;';
-const visibleStyle = 'display: block;';
-
-selectEl.addEventListener('click', handleOption);
-
-textLoader.style.cssText = hiddenStyle;
-textError.style.cssText = hiddenStyle;
+selectEl.addEventListener('change', handleOption);
 
 async function getBreeds() {
   try {
-    textLoader.style.cssText = visibleStyle;
+    selectEl.classList.add('hidden');
+    textLoader.classList.remove('hidden');
     const result = await fetchBreeds();
     console.log('getBreeds: ', result);
+    if (result) {
+      selectEl.classList.remove('hidden');
+    }
     return result;
   } catch (error) {
     console.log(error);
-    textError.style.cssText = visibleStyle;
+    textError.classList.remove('hidden');
   } finally {
-    textLoader.style.cssText = hiddenStyle;
+    textLoader.classList.add('hidden');
   }
 }
 
@@ -38,19 +36,26 @@ getBreeds()
   })
   .catch(error => {
     console.log(error);
-    textError.style.cssText = visibleStyle;
+    textError.classList.remove('hidden');
   });
 
 async function getCatByBreed(breedId) {
   try {
-    textLoader.style.cssText = visibleStyle;
+    selectEl.classList.add('hidden');
+    containerInfo.classList.add('hidden');
+    textError.classList.add('hidden');
+    textLoader.classList.remove('hidden');
     const result = await fetchCatByBreed(breedId);
+    if (result) {
+      selectEl.classList.remove('hidden');
+      containerInfo.classList.remove('hidden');
+    }
     return result;
   } catch (error) {
     console.log(error);
-    textError.style.cssText = visibleStyle;
+    textError.classList.remove('hidden');
   } finally {
-    textLoader.style.cssText = hiddenStyle;
+    textLoader.classList.add('hidden');
   }
 }
 
@@ -59,6 +64,7 @@ function handleOption(evt) {
   const breedId = evt.target.value;
   getCatByBreed(breedId)
     .then(cat => {
+      containerInfo.innerHTML = '';
       console.log('Cat by breed: ', cat[0]);
       const markup = `<div style="display: flex; flex-direction: row">
         <div
@@ -75,8 +81,8 @@ function handleOption(evt) {
           "
         >
           <img
-            src=${cat[0]?.url}
-            alt=${cat[0]?.breeds[0]?.name}
+            src=${cat[0].url}
+            alt=${cat[0].breeds[0].name}
             style="
               display: block;
               width: 100%;
@@ -85,18 +91,21 @@ function handleOption(evt) {
         </div>
         <div style="display: block; margin-top: 30px">
           <h1 style="font-size: x-large; font-weight: 700; margin-bottom: 16px">
-            ${cat[0]?.breeds[0]?.name}
+            ${cat[0].breeds[0].name}
           </h1>
-          <p style="margin-bottom: 12px">${cat[0]?.breeds[0]?.description}</p>
+          <p style="margin-bottom: 12px">${cat[0].breeds[0].description}</p>
           <p>
             <span style="font-weight: 700; padding-right: 8px">Temperament:</span>${cat[0]?.breeds[0]?.temperament}
           </p>
         </div>
       </div>`;
+      if (cat) {
+        containerInfo.classList.remove('hidden');
+      }
       containerInfo.innerHTML = markup;
     })
     .catch(error => {
       console.log(error);
-      textError.style.cssText = visibleStyle;
+      textError.classList.remove('hidden');
     });
 }
